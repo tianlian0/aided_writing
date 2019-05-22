@@ -7,7 +7,6 @@
 *.pdb
 *.vcproj.*.user
 *.suo
-*.txt
 ._*
 [Dd]ebug
 [Rr]elease

@@ -57,7 +57,7 @@ namespace aidedWriting
         #endregion
 
         //预处理后的文本文件的路径
-        private readonly string res_map_path = "res_map.txt";
+        private readonly string res_map_path = "../../res_map.txt";
 
         public MainForm()
         {
@@ -83,19 +83,27 @@ namespace aidedWriting
             {
                 sr.Close();
             }
-            textBox2.Hide();
+            listBox1.Hide();
         }
 
         //在文本框中按键后修改自动补全的内容
         private void TextBox1_KeyUp(object sender, KeyEventArgs e)
         {
+            if (e.KeyCode == Keys.Down || e.KeyCode == Keys.Up)
+            {
+                return;
+            }
             if (textBox1.Text.Length >= 4 && textBox1.SelectionStart >= 4)
             {
                 string str = textBox1.Text.Substring(textBox1.SelectionStart - 4, 4);
                 if (auto_write_map.ContainsKey(str))
                 {
-                    str = auto_write_map[str].Replace("#", "\r\n");
-                    textBox2.Text = str;
+                    listBox1.Items.Clear();
+                    listBox1.Items.AddRange(auto_write_map[str].Split('#'));
+                    if (listBox1.SelectedIndex == -1)
+                    {
+                        listBox1.SetSelected(0, true);
+                    }
                     Point temp;
                     GetCaretPos(out temp);
                     temp.Y += 30;
@@ -107,27 +115,40 @@ namespace aidedWriting
                     {
                         temp.X = 535;
                     }
-                    textBox2.Location = temp;
-                    textBox2.Show();
+                    listBox1.Location = temp;
+                    listBox1.Show();
                     return;
                 }
             }
-            textBox2.Hide();
-            textBox2.Text = "";
+            listBox1.Hide();
+            listBox1.Items.Clear();
         }
 
         //自动填充补全的第一条内容
         private void Button1_Click(object sender, EventArgs e)
         {
-            if (textBox2.Text.Length > 0)
+            if (listBox1.Items.Count > 0)
             {
                 string s = textBox1.Text;
                 int idx = textBox1.SelectionStart;
-                s = s.Insert(idx, textBox2.Text.Replace("\r", "").Split('\n')[0]);
+                s = s.Insert(idx, listBox1.Text);
                 textBox1.Text = s;
                 textBox1.SelectionStart = textBox1.Text.Length;
                 textBox1.Focus();
             }
+        }
+
+        private void TextBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Down && listBox1.SelectedIndex + 1 < listBox1.Items.Count)
+            {
+                listBox1.SetSelected(listBox1.SelectedIndex + 1 ,true);
+            }
+            else if(e.KeyCode == Keys.Up && listBox1.SelectedIndex - 1 >= 0)
+            {
+                listBox1.SetSelected(listBox1.SelectedIndex - 1, true);
+            }
+            e.Handled = true;
         }
     }
 }
