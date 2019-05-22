@@ -89,9 +89,19 @@ namespace aidedWriting
         //在文本框中按键后修改自动补全的内容
         private void TextBox1_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Down || e.KeyCode == Keys.Up)
+            if (e != null && (e.KeyCode == Keys.Down || e.KeyCode == Keys.Up))
             {
                 return;
+            }
+            if (textBox1.Text.Length >= 1)
+            {
+                string temp = textBox1.Text.Substring(textBox1.SelectionStart - 1, 1);
+                if (temp.Equals("。") || temp.Equals("！"))
+                {
+                    listBox1.Hide();
+                    listBox1.Items.Clear();
+                    return;
+                }
             }
             if (textBox1.Text.Length >= 4 && textBox1.SelectionStart >= 4)
             {
@@ -127,15 +137,21 @@ namespace aidedWriting
         //自动填充补全的第一条内容
         private void Button1_Click(object sender, EventArgs e)
         {
+            string s = textBox1.Text;
+            int idx = textBox1.SelectionStart;
             if (listBox1.Items.Count > 0)
             {
-                string s = textBox1.Text;
-                int idx = textBox1.SelectionStart;
                 s = s.Insert(idx, listBox1.Text);
                 textBox1.Text = s;
-                textBox1.SelectionStart = textBox1.Text.Length;
-                textBox1.Focus();
+                textBox1.SelectionStart = idx + listBox1.Text.Length;
             }
+            else
+            {
+                s = s.Insert(idx, "\r\n");
+                textBox1.Text = s;
+                textBox1.SelectionStart = idx + "\r\n".Length;
+            }
+            textBox1.Focus();
         }
 
         private void TextBox1_KeyDown(object sender, KeyEventArgs e)
@@ -148,7 +164,15 @@ namespace aidedWriting
             {
                 listBox1.SetSelected(listBox1.SelectedIndex - 1, true);
             }
-            e.Handled = true;
+            if (e.KeyCode == Keys.Down || e.KeyCode == Keys.Up)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void TextBox1_Click(object sender, EventArgs e)
+        {
+            TextBox1_KeyUp(sender, null);
         }
     }
 }
